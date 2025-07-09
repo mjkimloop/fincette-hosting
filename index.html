@@ -63,20 +63,35 @@
 
     <script>
     try {
+        // [업데이트] reportData 객체 전체를 새로운 내용으로 교체
         const reportData = {
             "A": {
-                "title": "A안 - 단기 운영자금 확보 설계",
-                "filename_prefix": "A안_단기_운영자금",
-                "subtitle": "사업자 대상, 3~5년 단기 주담대로 운영자금 빠르게 확보",
-                "metrics": { "interestRate": "연 4.9% ~ 14%", "loanTerm": "3년 ~ 5년", "repaymentMethod": "만기일시상환" },
-                "description": { "features": "사업자를 대상으로 주택을 담보로 하여 비교적 빠르게 운영 자금을 확보할 수 있는 대출 방식입니다. 매월 이자만 납부하여 부담이 적습니다.", "recommendedFor": "사업 운영 자금이 급히 필요한 개인사업자" }
+                "title": "A안 - 사업자금 빠른 확보 설계",
+                "filename_prefix": "A안_사업자금_빠른_확보",
+                "subtitle": "사업자를 위한 3~5년 단기 주담대, 운영자금 신속 확보",
+                "metrics": {
+                    "interestRate": "연 4.9% ~ 14%",
+                    "loanTerm": "3년 ~ 5년",
+                    "repaymentMethod": "만기일시상환"
+                },
+                "description": {
+                    "features": "내 집을 담보로 사업자금을 빠르게 받을 수 있어요. 매월 이자만 내면 되니까 당장 부담도 적어요.",
+                    "recommendedFor": "당장 사업자금이 급한 개인사업자"
+                }
             },
             "B": {
-                "title": "B안 - 초기 안정 + 미래 유연 설계",
-                "filename_prefix": "B안_초기안정_미래유연",
-                "subtitle": "초기 3~5년 고정금리 후 변동금리로 전환, 금리 하락기 대응",
-                "metrics": { "interestRate": "연 4.8% ~ 9%", "loanTerm": "15년 ~ 30년", "repaymentMethod": "원리금균등" },
-                "description": { "features": "초기에는 고정금리로 안정적인 상환 계획을 세우고, 이후 변동금리로 전환하여 금리 하락기의 혜택을 기대할 수 있는 혼합형 방식입니다.", "recommendedFor": "소득 증가가 예정된 분, 5년 내 거주지를 이동할 계획이 있는 분" }
+                "title": "B안 - 안정적 시작 + 미래 대응 설계",
+                "filename_prefix": "B안_안정적_시작_미래_대응",
+                "subtitle": "처음 3~5년 고정금리로 안정, 이후 변동금리로 금리 하락 혜택",
+                "metrics": {
+                    "interestRate": "연 4.8% ~ 9%",
+                    "loanTerm": "15년 ~ 30년",
+                    "repaymentMethod": "원리금균등"
+                },
+                "description": {
+                    "features": "처음엔 고정금리로 안정적으로 계획을 세우고, 나중엔 변동금리로 바뀌어 금리가 떨어지면 더 유리해져요.",
+                    "recommendedFor": "앞으로 소득이 늘어날 예정인 분, 5년 내 이사 계획이 있는 분"
+                }
             }
         };
 
