@@ -22,7 +22,6 @@
 
     <div class="container mx-auto max-w-3xl p-4 sm:p-8">
         
-        <!-- 옵션 선택 버튼 (업데이트) -->
         <div id="selection-container" class="mb-8 p-4 bg-white rounded-xl shadow-sm border border-gray-200">
             <h2 class="text-lg font-semibold text-center mb-4 text-gray-700">리포트 방식 선택</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -48,6 +47,15 @@
                 <div><h3 class="text-lg font-bold text-gray-800 mb-2">대출 방식 특징</h3><p id="desc-features" class="text-gray-600 leading-relaxed"></p></div>
                 <div class="border-t border-gray-100 pt-4"><h3 class="text-lg font-bold text-gray-800 mb-2">추천 대상</h3><p id="desc-recommended-for" class="text-gray-600 leading-relaxed"></p></div>
             </div>
+
+            <!-- [업데이트] 면책 조항 문구 추가 -->
+            <div class="printable-card">
+                <p class="text-xs text-gray-500 text-center bg-gray-100 p-4 rounded-lg">
+                    ※ 본 리포트는 예시이며, 실제 대출 조건은 금융사 정책 및 고객 신용도, 담보 평가 결과 등에 따라 달라질 수 있습니다.  
+                    정확한 대출 한도 및 금리는 상담 후 확정됩니다.
+                </p>
+            </div>
+
             <div id="comparison-container" class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm"><h3 class="text-lg font-bold text-gray-800 mb-4">다른 대출 방식과 한눈에 비교하기</h3><table class="w-full text-sm text-left text-gray-500"><thead class="text-xs text-gray-700 uppercase bg-gray-50"><tr><th scope="col" class="px-6 py-3">구분</th><th scope="col" class="px-6 py-3">예상 금리</th><th scope="col" class="px-6 py-3">대출 기간</th></tr></thead><tbody id="comparison-body"></tbody></table></div>
             <div id="cta-container" class="grid grid-cols-1 sm:grid-cols-3 gap-4"><a href="https://fincettereport.kr/edit" target="_blank" class="block w-full p-4 font-semibold text-gray-700 text-center bg-gray-200 rounded-lg hover:bg-gray-300 transition underline">내 정보 다시 입력하기</a><a href="https://fincettereport.kr/choose" target="_blank" class="block w-full p-4 font-semibold text-gray-700 text-center bg-gray-200 rounded-lg hover:bg-gray-300 transition underline">다른 방식 보기</a><a href="https://fincettereport.kr/consult" target="_blank" class="block w-full p-4 font-bold text-white text-center bg-blue-600 rounded-lg hover:bg-blue-700 transition underline">전문가 상담 신청</a></div>
             <div id="print-container" class="text-center pt-4"><button onclick="downloadPDF()" title="PDF 저장" class="px-6 py-2 text-sm text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>리포트 저장 (PDF)</button></div>
@@ -56,33 +64,18 @@
 
     <script>
     try {
-        // [업데이트] 데이터 객체 수정
         const reportData = {
             "A": {
                 "title": "A안 - 단기 운영자금 확보 설계",
                 "subtitle": "사업자 대상, 3~5년 단기 주담대로 운영자금 빠르게 확보",
-                "metrics": {
-                    "interestRate": "연 4.9% ~ 14%",
-                    "loanTerm": "3년 ~ 5년",
-                    "repaymentMethod": "만기일시상환"
-                },
-                "description": {
-                    "features": "사업자를 대상으로 주택을 담보로 하여 비교적 빠르게 운영 자금을 확보할 수 있는 대출 방식입니다. 매월 이자만 납부하여 부담이 적습니다.",
-                    "recommendedFor": "사업 운영 자금이 급히 필요한 개인사업자"
-                }
+                "metrics": { "interestRate": "연 4.9% ~ 14%", "loanTerm": "3년 ~ 5년", "repaymentMethod": "만기일시상환" },
+                "description": { "features": "사업자를 대상으로 주택을 담보로 하여 비교적 빠르게 운영 자금을 확보할 수 있는 대출 방식입니다. 매월 이자만 납부하여 부담이 적습니다.", "recommendedFor": "사업 운영 자금이 급히 필요한 개인사업자" }
             },
             "B": {
                 "title": "B안 - 초기 안정 + 미래 유연 설계",
                 "subtitle": "초기 3~5년 고정금리 후 변동금리로 전환, 금리 하락기 대응",
-                "metrics": {
-                    "interestRate": "연 4.8% ~ 9%",
-                    "loanTerm": "15년 ~ 30년",
-                    "repaymentMethod": "원리금균등"
-                },
-                "description": {
-                    "features": "초기에는 고정금리로 안정적인 상환 계획을 세우고, 이후 변동금리로 전환하여 금리 하락기의 혜택을 기대할 수 있는 혼합형 방식입니다.",
-                    "recommendedFor": "소득 증가가 예정된 분, 5년 내 거주지를 이동할 계획이 있는 분"
-                }
+                "metrics": { "interestRate": "연 4.8% ~ 9%", "loanTerm": "15년 ~ 30년", "repaymentMethod": "원리금균등" },
+                "description": { "features": "초기에는 고정금리로 안정적인 상환 계획을 세우고, 이후 변동금리로 전환하여 금리 하락기의 혜택을 기대할 수 있는 혼합형 방식입니다.", "recommendedFor": "소득 증가가 예정된 분, 5년 내 거주지를 이동할 계획이 있는 분" }
             }
         };
 
@@ -120,7 +113,7 @@
 
         function renderComparison(currentOption) {
             elements.comparisonBody.innerHTML = '';
-            const options = ['A', 'B']; // [업데이트] C안 제거
+            const options = ['A', 'B'];
             options.forEach(option => {
                 const data = reportData[option];
                 const isCurrent = option === currentOption;
@@ -160,7 +153,7 @@
                 console.error(`${option} 방식 리포트를 렌더링하는 중 오류 발생:`, error);
             }
         }
-
+        
         // 전역 스코프에 함수 노출
         window.renderReport = renderReport;
         window.downloadPDF = downloadPDF;
