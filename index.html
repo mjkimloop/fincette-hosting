@@ -8,13 +8,25 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        
+        /* [업데이트 4] 폰트 출력 일관성 강화 */
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif !important;
         }
+
+        /* 프린트 및 PDF 생성 시 스타일 최적화 */
         @media print {
-            #selection-container, #cta-container, #print-container, #comparison-container { display: none; }
-            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            .printable-card { margin-bottom: 20px !important; page-break-inside: avoid; }
+            /* [업데이트 5] 색상 출력 보장 */
+            body {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            /* [업데이트 3] 카드 단위 출력 안정성 강화 */
+            .printable-card {
+                margin-bottom: 32px !important;
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
         }
     </style>
 </head>
@@ -48,7 +60,6 @@
                 <div class="border-t border-gray-100 pt-4"><h3 class="text-lg font-bold text-gray-800 mb-2">추천 대상</h3><p id="desc-recommended-for" class="text-gray-600 leading-relaxed"></p></div>
             </div>
 
-            <!-- [업데이트] 면책 조항 문구 추가 -->
             <div class="printable-card">
                 <p class="text-xs text-gray-500 text-center bg-gray-100 p-4 rounded-lg">
                     ※ 본 리포트는 예시이며, 실제 대출 조건은 금융사 정책 및 고객 신용도, 담보 평가 결과 등에 따라 달라질 수 있습니다.  
@@ -91,18 +102,27 @@
             comparisonBody: document.getElementById('comparison-body')
         };
 
+        // [업데이트] PDF 다운로드 함수 수정
         function downloadPDF() {
             try {
                 const element = document.getElementById('report-content');
-                const currentTitle = document.title;
-                const opt = { margin: 0.5, filename: `${currentTitle}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } };
-                document.getElementById('selection-container').style.display = 'none';
-                document.getElementById('cta-container').style.display = 'none';
-                document.getElementById('print-container').style.display = 'none';
-                document.getElementById('comparison-container').style.display = 'none';
+                const currentTitle = document.title.replace(/\s/g, '_').replace(/-/g, ''); // 공백과 하이픈 제거
+                const opt = {
+                    margin: 0.5,
+                    filename: `${currentTitle}_핀셋리포트.pdf`, // [수정 1] 동적 파일명 적용
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2, useCORS: true },
+                    jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+                };
+                
+                // [수정 2] PDF 렌더링 직전 불필요 요소 제거
+                const hiddenElements = element.querySelectorAll('#selection-container, #cta-container, #print-container, #comparison-container');
+                hiddenElements.forEach(e => e.style.display = 'none');
+
                 html2pdf().set(opt).from(element).save().then(() => {
+                    // PDF 생성 후 숨겼던 부분 다시 보이기
+                    hiddenElements.forEach(e => e.style.display = 'grid'); // 원래 grid였던 cta-container를 위해
                     document.getElementById('selection-container').style.display = 'block';
-                    document.getElementById('cta-container').style.display = 'grid';
                     document.getElementById('print-container').style.display = 'block';
                     document.getElementById('comparison-container').style.display = 'block';
                 });
@@ -154,7 +174,6 @@
             }
         }
         
-        // 전역 스코프에 함수 노출
         window.renderReport = renderReport;
         window.downloadPDF = downloadPDF;
 
