@@ -7,17 +7,48 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
-        /* [업데이트] Noto Sans KR 폰트 추가 및 Inter 폰트 CDN */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         
-        /* [업데이트] 폰트 폴백 시스템 강화 */
         body {
-            font-family: 'Inter', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif !important;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif !important;
+            /* [업데이트] 모바일에서 콘텐츠가 하단 CTA에 가려지지 않도록 여백 추가 */
+            padding-bottom: 120px; /* 하단 고정 CTA 높이만큼 여백 */
         }
+
+        /* [업데이트] 모바일에서 자연스러운 줄바꿈 처리 */
+        p, h1, h2, h3, h4, span, div {
+            word-break: keep-all;
+        }
+
         @media print {
             #selection-container, #cta-container, #print-container, #comparison-container { display: none; }
-            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            body { 
+                -webkit-print-color-adjust: exact; 
+                print-color-adjust: exact;
+                padding-bottom: 0; /* 프린트 시에는 하단 여백 제거 */
+            }
             .printable-card { margin-bottom: 32px !important; page-break-inside: avoid; break-inside: avoid; }
+        }
+
+        /* [업데이트] 모바일 화면(sm 이하)에서만 CTA 버튼을 하단에 고정 */
+        @media (max-width: 639px) {
+            #cta-container-mobile {
+                display: flex;
+            }
+            #cta-container-desktop {
+                display: none;
+            }
+        }
+        @media (min-width: 640px) {
+            #cta-container-mobile {
+                display: none;
+            }
+            #cta-container-desktop {
+                display: grid;
+            }
+            body {
+                padding-bottom: 0; /* 데스크탑에서는 하단 여백 제거 */
+            }
         }
     </style>
 </head>
@@ -52,7 +83,7 @@
             </div>
 
             <div class="printable-card">
-                <p class="text-xs text-gray-500 text-center bg-gray-200 p-4 rounded-lg">
+                <p class="text-sm text-gray-700 text-center bg-gray-200 p-4 rounded-lg">
                     ※ 본 리포트는 예시이며, 실제 대출 조건은 금융사 정책 및 고객 신용도, 담보 평가 결과 등에 따라 달라질 수 있습니다.  
                     정확한 대출 한도 및 금리는 상담 후 확정됩니다.
                 </p>
@@ -60,22 +91,24 @@
 
             <div id="comparison-container" class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm"><h3 class="text-lg font-bold text-gray-800 mb-4">다른 대출 방식과 한눈에 비교하기</h3><table class="w-full text-sm text-left text-gray-500"><thead class="text-xs text-gray-700 uppercase bg-gray-50"><tr><th scope="col" class="px-6 py-3">구분</th><th scope="col" class="px-6 py-3">예상 금리</th><th scope="col" class="px-6 py-3">대출 기간</th></tr></thead><tbody id="comparison-body"></tbody></table></div>
             
-            <!-- [업데이트] CTA 버튼 UX 개선 -->
-            <div id="cta-container" class="flex flex-col space-y-3 pt-4">
-                <a href="https://fincettereport.kr/edit" onclick="handleCtaClick('edit')" data-variant="1" class="cta-button block w-full text-center px-4 py-3.5 text-base leading-snug font-semibold text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 active:shadow-inner transition">
-                    🔄 정보 수정해서 더 정확하게 확인하기
-                </a>
-                <a href="https://fincettereport.kr/choose" onclick="handleCtaClick('choose')" data-variant="2" class="cta-button block w-full text-center px-4 py-3.5 text-base leading-snug font-semibold text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 active:shadow-inner transition">
-                    🔍 혹시 더 좋은 방법이 있을까 확인하기
-                </a>
-                <a href="https://fincettereport.kr/consult" onclick="handleCtaClick('consult')" data-variant="3" class="cta-button block w-full text-center px-4 py-3.5 text-base leading-snug font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 active:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition shadow-md hover:shadow-lg">
-                    📞 전문가에게 바로 무료로 확인받기
-                </a>
+            <!-- 데스크탑용 CTA 버튼 -->
+            <div id="cta-container-desktop" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <a href="https://fincettereport.kr/edit" target="_blank" class="block w-full p-4 font-semibold text-gray-700 text-center bg-gray-200 rounded-lg hover:bg-gray-300 transition underline">내 정보 다시 입력하기</a>
+                <a href="https://fincettereport.kr/choose" target="_blank" class="block w-full p-4 font-semibold text-gray-700 text-center bg-gray-200 rounded-lg hover:bg-gray-300 transition underline">다른 방식 보기</a>
+                <a href="https://fincettereport.kr/consult" target="_blank" class="block w-full p-4 font-bold text-white text-center bg-blue-600 rounded-lg hover:bg-blue-700 transition underline">전문가 상담 신청</a>
             </div>
 
             <div id="print-container" class="text-center pt-4"><button onclick="downloadPDF()" title="PDF 저장" class="px-6 py-2 text-sm text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>리포트 저장 (PDF)</button></div>
         </div>
     </div>
+
+    <!-- [업데이트] 모바일용 하단 고정 CTA 버튼 -->
+    <div id="cta-container-mobile" class="fixed bottom-0 left-0 right-0 bg-white p-4 border-t border-gray-200 shadow-lg z-50 space-x-2 flex justify-center">
+        <a href="https://fincettereport.kr/edit" target="_blank" class="flex-1 px-4 py-3 text-sm font-semibold text-gray-700 text-center bg-gray-200 rounded-lg hover:bg-gray-300 transition">다시 입력</a>
+        <a href="https://fincettereport.kr/choose" target="_blank" class="flex-1 px-4 py-3 text-sm font-semibold text-gray-700 text-center bg-gray-200 rounded-lg hover:bg-gray-300 transition">다른 방식</a>
+        <a href="https://fincettereport.kr/consult" target="_blank" class="flex-1 px-4 py-3 text-sm font-bold text-white text-center bg-blue-600 rounded-lg hover:bg-blue-700 transition">상담 신청</a>
+    </div>
+
 
     <script>
     try {
@@ -114,15 +147,9 @@
             const element = document.getElementById('report-content');
             const reportInfo = reportData[currentReportOption];
             const filename = `${reportInfo.filename_prefix}_핀셋리포트.pdf`;
-            const opt = {
-                margin:       0.5,
-                filename:     filename,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true },
-                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
-            };
+            const opt = { margin: 0.5, filename: filename, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } };
             
-            const hiddenElements = document.querySelectorAll('#selection-container, #cta-container, #print-container, #comparison-container');
+            const hiddenElements = document.querySelectorAll('#selection-container, #cta-container-desktop, #cta-container-mobile, #print-container, #comparison-container');
             const originalDisplays = Array.from(hiddenElements).map(el => el.style.display);
             hiddenElements.forEach(el => el.style.display = 'none');
 
@@ -178,13 +205,6 @@
             } catch (error) {
                 console.error(`${option} 방식 리포트를 렌더링하는 중 오류 발생:`, error);
             }
-        }
-        
-        // [업데이트] CTA 클릭 이벤트 추적 함수
-        function handleCtaClick(ctaType) {
-            console.log(`CTA 버튼 클릭: ${ctaType}`);
-            // 여기에 Firestore에 ctaClicked: true 업데이트 로직 추가 가능
-            // 예: updateDoc(doc(db, "reports", currentReportId), { ctaClicked: true, ctaType: ctaType });
         }
         
         window.renderReport = renderReport;
