@@ -7,60 +7,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
-    <!-- [업데이트] Firebase SDK 추가 -->
-    <script type="module">
-        // Firebase v9+ 모듈 방식
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
-        import { getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
-
-        // [중요] 아래 firebaseConfig 객체를 선생님의 Firebase 프로젝트 설정값으로 교체해주세요.
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_AUTH_DOMAIN",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_STORAGE_BUCKET",
-            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-            appId: "YOUR_APP_ID"
-        };
-
-        // Firebase 앱 초기화
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
-        // [업데이트] CTA 클릭 처리 함수
-        // reportId는 현재 보고있는 리포트의 ID ('A' 또는 'B') 입니다.
-        // 이 MVP에서는 사용자 구분이 없으므로, reportId를 문서 ID로 직접 사용합니다.
-        async function handleCTAClick(reportId, ctaType) {
-            if (!reportId) {
-                console.error("리포트 ID를 찾을 수 없습니다.");
-                return;
-            }
-
-            const reportRef = doc(db, "reports", reportId);
-            
-            console.log(`CTA 클릭: ${ctaType}, 리포트 ID: ${reportId}`);
-            
-            try {
-                // Firestore 문서 업데이트
-                // 문서가 없을 경우를 대비해 setDoc과 merge:true 옵션을 사용하여 안전하게 업데이트합니다.
-                await setDoc(reportRef, {
-                    executed: true,
-                    executedAt: serverTimestamp(), // 서버 시간 기준 타임스탬프
-                    lastExecutedCTA: ctaType
-                }, { merge: true });
-
-                console.log("Firestore 업데이트 성공!");
-                alert(`'${ctaType}' 실행이 기록되었습니다.`);
-            } catch (error) {
-                console.error("Firestore 업데이트 중 오류 발생: ", error);
-                alert("오류가 발생했습니다. 다시 시도해주세요.");
-            }
-        };
-
-        // 전역 스코프에 함수 노출
-        window.handleCTAClick = handleCTAClick;
-    </script>
-    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         body {
@@ -68,7 +14,7 @@
             padding-bottom: 120px;
         }
         @media print {
-            #selection-container, #cta-container, #print-container, #comparison-container { display: none; }
+            #selection-container, #cta-container, #print-container, #comparison-container, #reminder-card-container { display: none; }
             body { -webkit-print-color-adjust: exact; print-color-adjust: exact; padding-bottom: 0; }
             .printable-card { margin-bottom: 32px !important; page-break-inside: avoid; break-inside: avoid; }
         }
@@ -78,6 +24,10 @@
 
     <div class="container mx-auto max-w-3xl p-4 sm:p-8">
         
+        <div id="reminder-card-container" class="mb-8" style="display: none;">
+            <!-- JavaScript로 내용이 채워집니다. -->
+        </div>
+
         <div id="selection-container" class="mb-8 p-4 bg-white rounded-xl shadow-sm border border-gray-200">
             <h2 class="text-lg font-semibold text-center mb-4 text-gray-700">리포트 방식 선택</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -86,7 +36,6 @@
             </div>
         </div>
 
-        <!-- 리포트가 표시될 영역 -->
         <div id="report-content" class="space-y-6">
             <div class="text-center printable-card">
                 <h1 id="report-title" class="text-2xl sm:text-3xl font-extrabold text-gray-800">리포트를 선택해주세요</h1>
@@ -103,50 +52,60 @@
                 <div><h3 class="text-lg font-bold text-gray-800 mb-2">대출 방식 특징</h3><p id="desc-features" class="text-gray-600 leading-relaxed"></p></div>
                 <div class="border-t border-gray-100 pt-4"><h3 class="text-lg font-bold text-gray-800 mb-2">추천 대상</h3><p id="desc-recommended-for" class="text-gray-600 leading-relaxed"></p></div>
             </div>
-
             <div class="printable-card">
                 <p class="text-sm text-gray-700 text-center bg-gray-200 p-4 rounded-lg">
                     ※ 본 리포트는 예시이며, 실제 대출 조건은 금융사 정책 및 고객 신용도, 담보 평가 결과 등에 따라 달라질 수 있습니다.  
                     정확한 대출 한도 및 금리는 상담 후 확정됩니다.
                 </p>
             </div>
-
             <div id="comparison-container" class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm"><h3 class="text-lg font-bold text-gray-800 mb-4">다른 대출 방식과 한눈에 비교하기</h3><table class="w-full text-sm text-left text-gray-500"><thead class="text-xs text-gray-700 uppercase bg-gray-50"><tr><th scope="col" class="px-6 py-3">구분</th><th scope="col" class="px-6 py-3">예상 금리</th><th scope="col" class="px-6 py-3">대출 기간</th></tr></thead><tbody id="comparison-body"></tbody></table></div>
-            
-            <!-- [업데이트] 하단 고정 CTA 버튼에 onclick 이벤트 추가 -->
-            <div id="cta-container" class="fixed bottom-0 left-0 right-0 w-full bg-white/90 backdrop-blur-sm border-t border-gray-200 shadow-t-lg">
-                <div class="container mx-auto max-w-3xl p-4">
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        <a href="https://fincettereport.kr/edit" onclick="handleCTAClick(currentReportOption, 'edit')" target="_blank" class="block w-full p-3 font-semibold text-gray-700 text-center bg-gray-200 rounded-lg hover:bg-gray-300 transition underline">내 정보 다시 입력하기</a>
-                        <a href="https://fincettereport.kr/choose" onclick="handleCTAClick(currentReportOption, 'choose')" target="_blank" class="block w-full p-3 font-semibold text-gray-700 text-center bg-gray-200 rounded-lg hover:bg-gray-300 transition underline">다른 방식 보기</a>
-                        <a href="https://fincettereport.kr/consult" onclick="handleCTAClick(currentReportOption, 'consult')" target="_blank" class="block w-full p-3 font-bold text-white text-center bg-blue-600 rounded-lg hover:bg-blue-700 transition underline">전문가 상담 신청</a>
-                    </div>
-                </div>
-            </div>
-
             <div id="print-container" class="text-center pt-4"><button onclick="downloadPDF()" title="PDF 저장" class="px-6 py-2 text-sm text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>리포트 저장 (PDF)</button></div>
         </div>
     </div>
 
-    <script>
-    try {
-        const reportData = {
-            "A": {
-                "title": "A안 - 사업자금 빠른 확보 설계",
-                "filename_prefix": "A안_사업자금_빠른_확보",
-                "subtitle": "사업자를 위한 3~5년 단기 주담대, 운영자금 신속 확보",
-                "metrics": { "interestRate": "연 4.9% ~ 14%", "loanTerm": "3년 ~ 5년", "repaymentMethod": "만기일시상환" },
-                "description": { "features": "내 집을 담보로 사업자금을 빠르게 받을 수 있어요. 매월 이자만 내면 되니까 당장 부담도 적어요.", "recommendedFor": "당장 사업자금이 급한 개인사업자" }
-            },
-            "B": {
-                "title": "B안 - 안정적 시작 + 미래 대응 설계",
-                "filename_prefix": "B안_안정적_시작_미래_대응",
-                "subtitle": "처음 3~5년 고정금리로 안정, 이후 변동금리로 금리 하락 혜택",
-                "metrics": { "interestRate": "연 4.8% ~ 9%", "loanTerm": "15년 ~ 30년", "repaymentMethod": "원리금균등" },
-                "description": { "features": "처음엔 고정금리로 안정적으로 계획을 세우고, 나중엔 변동금리로 바뀌어 금리가 떨어지면 더 유리해져요.", "recommendedFor": "앞으로 소득이 늘어날 예정인 분, 5년 내 이사 계획이 있는 분" }
-            }
+    <div id="cta-container" class="fixed bottom-0 left-0 right-0 w-full bg-white/90 backdrop-blur-sm border-t border-gray-200 shadow-t-lg">
+        <div class="container mx-auto max-w-3xl p-4">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <a href="#" onclick="event.preventDefault(); logExecution('expert_request_edit')" class="block w-full p-3 font-semibold text-gray-700 text-center bg-gray-200 rounded-lg hover:bg-gray-300 transition underline">내 정보 다시 입력하기</a>
+                <a href="#" onclick="event.preventDefault(); logExecution('expert_request_choose')" class="block w-full p-3 font-semibold text-gray-700 text-center bg-gray-200 rounded-lg hover:bg-gray-300 transition underline">다른 방식 보기</a>
+                <a href="#" onclick="event.preventDefault(); logExecution('expert_request_consult')" class="block w-full p-3 font-bold text-white text-center bg-blue-600 rounded-lg hover:bg-blue-700 transition underline">전문가에게 분석 요청</a>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+        import { getFirestore, doc, setDoc, addDoc, collection, serverTimestamp, query, where, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+
+        // =================================================================
+        // [수정] Firebase 연결 설정 (가장 중요!)
+        // =================================================================
+        // 아래 firebaseConfig 객체의 "YOUR_..." 부분들이 현재 오류의 원인입니다.
+        // 이 부분들을 선생님의 실제 Firebase 프로젝트 정보로 교체해야 합니다.
+        //
+        // [정보 찾는 방법]
+        // 1. Firebase 콘솔(console.firebase.google.com)로 이동합니다.
+        // 2. 'fincette-report-mvp' 프로젝트를 선택합니다.
+        // 3. 왼쪽 위 '프로젝트 개요' 옆의 톱니바퀴(⚙️) 아이콘 > [프로젝트 설정]을 클릭합니다.
+        // 4. '일반' 탭 아래 '내 앱' 섹션에서, 'SDK 설정 및 구성'의 '구성'을 선택합니다.
+        // 5. 거기에 보이는 apiKey, authDomain 등의 값을 아래에 그대로 복사해서 붙여넣으세요.
+        // =================================================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyBNjNWAImm2FPHlJFM4Nej4asrdEw-fOEQ",
+            authDomain: "fincette-report-mvp.firebaseapp.com",
+            projectId: "fincette-report-mvp", 
+            storageBucket: "fincette-report-mvp.firebasestorage.app",
+            messagingSenderId: "410308058859",
+            appId: "1:410308058859:web:eeba8d588186441a71e8ae"
         };
 
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const reportData = {
+            "A": { "title": "A안 - 사업자금 빠른 확보 설계", "filename_prefix": "A안_사업자금_빠른_확보", "subtitle": "사업자를 위한 3~5년 단기 주담대, 운영자금 신속 확보", "metrics": { "interestRate": "연 4.9% ~ 14%", "loanTerm": "3년 ~ 5년", "repaymentMethod": "만기일시상환" }, "description": { "features": "내 집을 담보로 사업자금을 빠르게 받을 수 있어요. 매월 이자만 내면 되니까 당장 부담도 적어요.", "recommendedFor": "당장 사업자금이 급한 개인사업자" } },
+            "B": { "title": "B안 - 안정적 시작 + 미래 대응 설계", "filename_prefix": "B안_안정적_시작_미래_대응", "subtitle": "처음 3~5년 고정금리로 안정, 이후 변동금리로 금리 하락 혜택", "metrics": { "interestRate": "연 4.8% ~ 9%", "loanTerm": "15년 ~ 30년", "repaymentMethod": "원리금균등" }, "description": { "features": "처음엔 고정금리로 안정적으로 계획을 세우고, 나중엔 변동금리로 바뀌어 금리가 떨어지면 더 유리해져요.", "recommendedFor": "앞으로 소득이 늘어날 예정인 분, 5년 내 이사 계획이 있는 분" } }
+        };
         window.currentReportOption = 'A';
 
         const elements = {
@@ -161,30 +120,40 @@
             comparisonBody: document.getElementById('comparison-body')
         };
         
+        async function logExecution(executionSource) {
+            const userId = "anonymous_user_01"; 
+            const reportId = window.currentReportOption;
+            if (!reportId) return;
+            try {
+                const executionsCollectionRef = collection(db, "executions");
+                await addDoc(executionsCollectionRef, { reportId, userId, executionSource, executedAt: serverTimestamp(), isRealExecution: false });
+                const reportRef = doc(db, "reports", reportId);
+                await setDoc(reportRef, { executed: true, lastExecutedAt: serverTimestamp() }, { merge: true });
+                alert("요청이 접수되었습니다. 전문가가 곧 연락드릴 예정입니다.");
+            } catch (error) { console.error("실행 로그 기록 중 오류:", error); }
+        };
+        
+        async function handleReminderClick(reminderId, reportId) {
+            const reminderCard = document.getElementById('reminder-card-container');
+            if (!reminderId) return;
+            const apiUrl = `https://<YOUR_REGION>-${firebaseConfig.projectId}.cloudfunctions.net/markReminderClicked`;
+            try {
+                const res = await fetch(apiUrl, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ reminderId }) });
+                if (res.ok) {
+                    if (reminderCard) reminderCard.style.display = 'none';
+                } else { console.error("리마인드 클릭 기록 실패"); }
+            } catch (err) { console.error("API 호출 오류:", err); }
+        };
+
         function downloadPDF() {
             const element = document.getElementById('report-content');
-            const reportInfo = reportData[currentReportOption];
+            const reportInfo = reportData[window.currentReportOption];
             const filename = `${reportInfo.filename_prefix}_핀셋리포트.pdf`;
-            const opt = {
-                margin:       0.5,
-                filename:     filename,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true },
-                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
-            };
-            
-            const hiddenElements = document.querySelectorAll('#selection-container, #cta-container, #print-container, #comparison-container');
+            const opt = { margin: 0.5, filename: filename, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } };
+            const hiddenElements = document.querySelectorAll('#selection-container, #cta-container, #print-container, #comparison-container, #reminder-card-container');
             const originalDisplays = Array.from(hiddenElements).map(el => el.style.display);
             hiddenElements.forEach(el => el.style.display = 'none');
-
-            html2pdf().set(opt).from(element).save().catch(err => {
-                console.error("PDF 생성 오류:", err);
-                alert("PDF를 생성하는 데 문제가 발생했습니다.");
-            }).finally(() => {
-                hiddenElements.forEach((el, index) => {
-                    el.style.display = originalDisplays[index] || '';
-                });
-            });
+            html2pdf().set(opt).from(element).save().catch(err => { console.error("PDF 생성 오류:", err); }).finally(() => { hiddenElements.forEach((el, index) => { el.style.display = originalDisplays[index] || ''; }); });
         }
 
         function renderComparison(currentOption) {
@@ -206,7 +175,6 @@
                 window.currentReportOption = option;
                 const data = reportData[option];
                 if (!data) return;
-                
                 document.title = `${data.title} - 핀셋리포트`;
                 elements.title.textContent = data.title;
                 elements.subtitle.textContent = data.subtitle;
@@ -215,7 +183,6 @@
                 elements.repaymentMethod.textContent = data.metrics.repaymentMethod;
                 elements.features.textContent = data.description.features;
                 elements.recommendedFor.textContent = data.description.recommendedFor;
-                
                 elements.optionButtons.forEach(button => {
                     if (button.textContent.includes(option)) {
                         button.classList.remove('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
@@ -226,24 +193,33 @@
                     }
                 });
                 renderComparison(option);
-            } catch (error) {
-                console.error(`${option} 방식 리포트를 렌더링하는 중 오류 발생:`, error);
-            }
+            } catch (error) { console.error(`${option} 방식 리포트를 렌더링하는 중 오류 발생:`, error); }
         }
         
         window.renderReport = renderReport;
         window.downloadPDF = downloadPDF;
+        window.logExecution = logExecution;
+        window.handleReminderClick = handleReminderClick;
 
-        document.addEventListener('DOMContentLoaded', (event) => {
+        document.addEventListener('DOMContentLoaded', async (event) => {
+            const userId = "anonymous_user_01";
+            const reminderContainer = document.getElementById('reminder-card-container');
+            try {
+                const q = query(collection(db, "reminders"), where("userId", "==", userId), orderBy("sentAt", "desc"), limit(1));
+                const querySnapshot = await getDocs(q);
+                if (!querySnapshot.empty) {
+                    const doc = querySnapshot.docs[0];
+                    const reminder = { id: doc.id, ...doc.data() };
+                    if (!reminder.clicked) {
+                        reminderContainer.innerHTML = `<div class="p-6 w-full max-w-md mx-auto shadow-md rounded-2xl bg-yellow-50 border-yellow-400"><div class="flex items-start space-x-4"><div class="bg-yellow-100 p-2 rounded-full"><svg class="h-6 w-6 text-yellow-600" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a6 6 0 00-6 6v3.586l-1.707 1.707A1 1 0 003 15h14a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"></path></svg></div><div><h3 class="text-lg font-bold text-yellow-800">${reminder.headline}</h3><p class="text-sm text-gray-700 mt-1 mb-4">${reminder.body}</p><button onclick="handleReminderClick('${reminder.id}', '${reminder.reportId}')" class="bg-blue-600 text-white px-4 py-2 text-sm font-semibold rounded-lg hover:bg-blue-700">${reminder.buttonText}</button></div></div></div>`;
+                        reminderContainer.style.display = 'block';
+                    }
+                }
+            } catch (error) { console.error("리마인드 메시지 로딩 중 오류:", error); }
             const urlParams = new URLSearchParams(window.location.search);
             const initialOption = urlParams.get('option') || 'A';
             renderReport(initialOption);
         });
-
-    } catch (error) {
-        console.error("스크립트 전체에 치명적인 오류가 발생했습니다:", error);
-    }
     </script>
-
 </body>
 </html>
