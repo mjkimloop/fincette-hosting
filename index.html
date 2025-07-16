@@ -134,6 +134,9 @@
         };
 
         function downloadPDF() {
+            // [업데이트] PDF 저장 시 로그 기록
+            logExecution('pdf_download');
+            
             const element = document.getElementById('report-content');
             const reportInfo = reportData[currentReportOption];
             const filename = `${reportInfo.filename_prefix}_핀셋리포트.pdf`;
@@ -184,13 +187,10 @@
             } catch (error) { console.error(`${option} 방식 리포트를 렌더링하는 중 오류 발생:`, error); }
         }
         
-        // [신규] 외부 유입 추적 함수
         async function logSourceClick(source, persona, campaign) {
             const userId = "anonymous_" + (source.split('_')[0] || 'direct');
             const clickData = {
-                source,
-                persona,
-                campaign,
+                source, persona, campaign,
                 timestamp: serverTimestamp(),
                 device: /Mobi|Android/i.test(navigator.userAgent) ? "mobile" : "desktop"
             };
@@ -198,9 +198,7 @@
                 const trafficRef = collection(db, "trafficLogs");
                 await addDoc(trafficRef, clickData);
                 console.log("✅ 유입 기록 저장 완료:", source);
-            } catch (e) {
-                console.error("유입 기록 저장 오류:", e);
-            }
+            } catch (e) { console.error("유입 기록 저장 오류:", e); }
         }
 
         document.addEventListener('DOMContentLoaded', async (event) => {
@@ -211,17 +209,12 @@
             document.getElementById('cta-choose').addEventListener('click', (e) => { e.preventDefault(); logExecution('expert_request_choose'); });
             document.getElementById('cta-consult').addEventListener('click', (e) => { e.preventDefault(); logExecution('expert_request_consult'); });
 
-            // [수정] 유입 경로 추적 로직 실행
             const urlParams = new URLSearchParams(window.location.search);
             const source = urlParams.get("source");
             const persona = urlParams.get("persona") || 'A';
             const campaign = urlParams.get("campaign") || 'default';
+            if (source) { logSourceClick(source, persona, campaign); }
             
-            if (source) {
-                logSourceClick(source, persona, campaign);
-            }
-            
-            // 기존 리마인드 및 리포트 렌더링 로직
             const userId = "anonymous_user_01";
             const reminderContainer = document.getElementById('reminder-card-container');
             try {
@@ -236,7 +229,7 @@
                 }
             } catch (error) { console.error("리마인드 메시지 로딩 중 오류:", error); }
             
-            renderReport(persona); // URL 파라미터의 persona 값으로 초기 리포트 렌더링
+            renderReport(persona);
         });
     </script>
 </body>
