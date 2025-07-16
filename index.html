@@ -24,6 +24,7 @@
 
     <div class="container mx-auto max-w-3xl p-4 sm:p-8">
         
+        <!-- 리마인드 메시지 카드 표시 영역 -->
         <div id="reminder-card-container" class="mb-8" style="display: none;">
             <!-- JavaScript로 내용이 채워집니다. -->
         </div>
@@ -107,7 +108,6 @@
             comparisonBody: document.getElementById('comparison-body')
         };
         
-        // [수정] CTA 버튼별로 다른 피드백을 주도록 로직 변경
         async function logExecution(executionSource) {
             const userId = "anonymous_user_01"; 
             const reportId = currentReportOption;
@@ -117,12 +117,9 @@
                 await addDoc(executionsCollectionRef, { reportId, userId, executionSource, executedAt: serverTimestamp(), isRealExecution: false });
                 const reportRef = doc(db, "reports", reportId);
                 await setDoc(reportRef, { executed: true, lastExecutedAt: serverTimestamp(), viewedAt: serverTimestamp() }, { merge: true });
-                
-                // '전문가에게 분석 요청' 버튼일 경우에만 알림창 표시
                 if (executionSource === 'expert_request_consult') {
                     alert("요청이 접수되었습니다. 전문가가 곧 연락드릴 예정입니다.");
                 } else {
-                    // 다른 버튼들은 백그라운드에서 조용히 기록만 합니다.
                     console.log(`실행 로그 기록 완료: ${executionSource}`);
                 }
             } catch (error) { console.error("실행 로그 기록 중 오류:", error); }
@@ -193,8 +190,8 @@
             document.getElementById('btn-option-a').addEventListener('click', () => renderReport('A'));
             document.getElementById('btn-option-b').addEventListener('click', () => renderReport('B'));
             document.getElementById('btn-download-pdf').addEventListener('click', downloadPDF);
-            document.getElementById('cta-edit').addEventListener('click', (e) => { e.preventDefault(); logExecution('expert_request_edit'); window.open('https://fincettereport.kr/edit', '_blank'); });
-            document.getElementById('cta-choose').addEventListener('click', (e) => { e.preventDefault(); logExecution('expert_request_choose'); window.open('https://fincettereport.kr/choose', '_blank'); });
+            document.getElementById('cta-edit').addEventListener('click', (e) => { e.preventDefault(); logExecution('expert_request_edit'); });
+            document.getElementById('cta-choose').addEventListener('click', (e) => { e.preventDefault(); logExecution('expert_request_choose'); });
             document.getElementById('cta-consult').addEventListener('click', (e) => { e.preventDefault(); logExecution('expert_request_consult'); });
 
             const userId = "anonymous_user_01";
