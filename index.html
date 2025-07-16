@@ -31,7 +31,6 @@
         <div id="selection-container" class="mb-8 p-4 bg-white rounded-xl shadow-sm border border-gray-200">
             <h2 class="text-lg font-semibold text-center mb-4 text-gray-700">리포트 방식 선택</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <!-- [수정] onclick 제거, id 추가 -->
                 <button id="btn-option-a" class="option-button w-full p-3 font-semibold text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition">A: 사업자 주담대</button>
                 <button id="btn-option-b" class="option-button w-full p-3 font-semibold text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition">B: 일반 주담대</button>
             </div>
@@ -183,7 +182,12 @@
         }
         
         document.addEventListener('DOMContentLoaded', async (event) => {
-            // [수정] 이벤트 리스너를 JavaScript 코드 안에서 설정
+            // [수정] 모든 함수를 전역 스코프에 노출시켜 오류를 해결합니다.
+            window.renderReport = renderReport;
+            window.downloadPDF = downloadPDF;
+            window.logExecution = logExecution;
+            window.handleReminderClick = handleReminderClick;
+
             document.getElementById('btn-option-a').addEventListener('click', () => renderReport('A'));
             document.getElementById('btn-option-b').addEventListener('click', () => renderReport('B'));
             document.getElementById('btn-download-pdf').addEventListener('click', downloadPDF);
