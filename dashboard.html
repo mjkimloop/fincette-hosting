@@ -76,7 +76,7 @@
             apiKey: "AIzaSyBNjNWAImm2FPHlJFM4Nej4asrdEw-fOEQ",
             authDomain: "fincette-report-mvp.firebaseapp.com",
             projectId: "fincette-report-mvp",
-            storageBucket: "fincette-report-mvp.firebasestorage.app",
+            storageBucket: "fincette-report-mvp.appspot.com",
             messagingSenderId: "410308058859",
             appId: "1:410308058859:web:eeba8d588186441a71e8ae"
         };
@@ -119,8 +119,14 @@
         function analyzeData(trafficLogs, reports, executions, reminders) {
             const trafficCount = trafficLogs.length;
             const viewedCount = reports.filter(doc => doc.data().viewedAt).length;
-            const executedCount = executions.filter(doc => doc.data().isRealExecution === true).length;
+            
+            // [수정] '리포트 저장' 집계 기준을 "pdf_download"로 변경
+            const savedCount = executions.filter(doc => doc.data().executionSource === "pdf_download").length;
             const requestedCount = executions.filter(doc => doc.data().executionSource === "expert_request_consult").length;
+            
+            // [수정] '리포트 실행'은 '저장'과 '요청'의 합으로 정의
+            const executedCount = savedCount + requestedCount;
+
             const remindersSentCount = reminders.length;
             const remindersClickedCount = reminders.filter(doc => doc.data().clicked === true).length;
 
